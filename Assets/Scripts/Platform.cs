@@ -4,7 +4,7 @@ using UnityEngine;
 
 public class Platform : MonoBehaviour
 {
-    public GameObject coinPrefab; // Префаб монетки
+    public GameObject coinPrefab;
     public int numberOfCoins = 5;
 
     public Cell[] cells;

@@ -13,16 +13,22 @@ public class PlayerController : MonoBehaviour
     public int numJumps = 1;
 
     private Vector2Int currentGridPosition;
-    private Vector2Int previousGridPosition; // Для хранения предыдущей позиции
-    private Cell previousCell; // Для хранения предыдущей ячейки
+    private Vector2Int previousGridPosition; 
+    private Cell previousCell;
     private bool isJumping = false;
     private bool isRevert = true;
 
     public FrontTrigger FrontTrigger, BackTrigger, LeftTrigger, RightTrigger;
     UIController uiController;
 
+    private Renderer playerRenderer;
+    private ShopManager shopManager;
+
     void Start()
     {
+        playerRenderer = GetComponent<Renderer>();
+        shopManager = FindObjectOfType<ShopManager>();
+        ApplySelectedSkin();
         uiController = FindObjectOfType<UIController>();
         currentGridPosition = new Vector2Int(
             Mathf.RoundToInt(transform.position.x / cellSize),
@@ -50,19 +56,24 @@ public class PlayerController : MonoBehaviour
         {
             MoveBall(Vector2Int.right);
         }
-        else if (Input.GetKeyDown(KeyCode.Z) && !isRevert) // Клавиша для отката хода (можно изменить на нужную кнопку)
+        else if (Input.GetKeyDown(KeyCode.Z) && !isRevert)
         {
             UndoMove();
         }
     }
 
+    public void ApplySelectedSkin()
+    {
+        int selectedSkinIndex = PlayerPrefs.GetInt("SelectedSkin", 0);
+        Color selectedColor = shopManager.skinColors[selectedSkinIndex];
+        playerRenderer.material.color = selectedColor;
+    }
     void MoveBall(Vector2Int direction)
     {
         isRevert = false;
-        previousGridPosition = currentGridPosition; // Сохраняем текущую позицию как предыдущую
+        previousGridPosition = currentGridPosition;
         currentGridPosition += direction;
 
-        // Обновляем позицию шара
         UpdateBallPosition();
     }
 
@@ -95,7 +106,7 @@ public class PlayerController : MonoBehaviour
             Cell cell = other.GetComponent<Cell>();
             if (cell)
             {
-                previousCell = cell; // Сохраняем текущую ячейку как предыдущую
+                previousCell = cell;
                 cell.IsPainted = true;
                 cell.AnimateCell();
                 isJumping = false;
