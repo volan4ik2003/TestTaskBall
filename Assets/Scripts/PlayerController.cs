@@ -1,31 +1,29 @@
 using DG.Tweening;
 using System.Collections;
 using System.Collections.Generic;
+using Unity.VisualScripting;
 using UnityEngine;
 
 public class PlayerController : MonoBehaviour
 {
-    public float moveDuration = 0.5f; // Длительность прыжка
-    public Vector2Int gridSize = new Vector2Int(5, 5); // Размеры игрового поля в ячейках
-    public float cellSize = 1f; // Размер одной ячейки
-    public float jumpPower = 1f; // Высота прыжка
-    public int numJumps = 1; // Количество прыжков (обычно 1)
+    public float moveDuration = 0.5f; 
+    public Vector2Int gridSize = new Vector2Int(5, 5); 
+    public float cellSize = 1f; 
+    public float jumpPower = 1f; 
+    public int numJumps = 1; 
 
-    private Vector2Int currentGridPosition; // Текущая позиция шара на игровом поле
-    private bool isJumping = false; // Флаг, чтобы предотвратить двойное нажатие
+    private Vector2Int currentGridPosition; 
+    private bool isJumping = false; 
 
     public FrontTrigger FrontTrigger, BackTrigger, LeftTrigger, RightTrigger;
-
+    UIController uiController;
     void Start()
     {
-        // Определяем текущую позицию шара на игровом поле исходя из его начальной позиции
+        uiController = FindObjectOfType<UIController>();
         currentGridPosition = new Vector2Int(
             Mathf.RoundToInt(transform.position.x / cellSize),
             Mathf.RoundToInt(transform.position.z / cellSize)
         );
-
-        // Обновляем позицию шара, чтобы она соответствовала ячейке
-        UpdateBallPosition();
     }
 
     void Update()
@@ -53,8 +51,6 @@ public class PlayerController : MonoBehaviour
     void MoveBall(Vector2Int direction)
     {
         Vector2Int newPosition = currentGridPosition + direction;
-
-        // Проверка на выход за границы поля
         currentGridPosition = newPosition;
         UpdateBallPosition();
     }
@@ -78,6 +74,50 @@ public class PlayerController : MonoBehaviour
                 cell.IsPainted = true;   
                 cell.AnimateCell();
             }
+            bool allCellsPainted = true;
+            foreach (Cell platform in FindObjectOfType<Platform>().cells)
+            {
+                if (!platform.IsPainted)
+                {
+                    allCellsPainted = false;
+                    break;
+                }
+            }
+
+            bool noMovesAllowed = !RightTrigger.moveAllowed && !LeftTrigger.moveAllowed &&
+                                  !FrontTrigger.moveAllowed && !BackTrigger.moveAllowed;
+
+            if (allCellsPainted)
+            {
+                BackroundColorChanger colorChanger = FindObjectOfType<BackroundColorChanger>();
+                if (colorChanger != null)
+                {
+                    colorChanger.ChangeBackgroundColor(new Color(0.3237f, 0.9150f, 0.3501f));
+                }
+
+                PlayerPrefs.SetInt("Level", PlayerPrefs.GetInt("Level", 0) + 1);
+
+                uiController.MainText.text = "YOU WIN!";
+                uiController.ButtonText.text = "NextLevel";
+                uiController.ShowWinPanel();
+            }
+            else if (!allCellsPainted && noMovesAllowed)
+            {
+                BackroundColorChanger colorChanger = FindObjectOfType<BackroundColorChanger>();
+                if (colorChanger != null)
+                {
+                    colorChanger.ChangeBackgroundColor(new Color(0.9137f, 0.4784f, 0.4863f));
+                }
+
+                uiController.MainText.text = "YOU LOSE!";
+                uiController.ButtonText.text = "RestartLevel";
+                uiController.ShowWinPanel();
+            }
+        }
+        if (other.gameObject.CompareTag("Coin"))
+        {
+            EconomyManager.Instance.AddCoins(1);
+            Destroy(other.gameObject);
         }
     }
 }

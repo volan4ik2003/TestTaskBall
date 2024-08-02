@@ -6,18 +6,17 @@ using UnityEngine;
 public class Cell : MonoBehaviour
 {
     public bool IsPainted;
+    public bool IsStartCell;
 
-    private Color targetColor = Color.red; // ÷вет, в который €чейка должна изменитьс€
-    public float animationDuration = 0.5f; // ƒлительность анимации
+    private Color targetColor = Color.red;
+    public float animationDuration = 0.5f;
 
-    private Color originalColor;
     private Vector3 originalScale;
     private Renderer cellRenderer;
 
     void Start()
     {
         cellRenderer = GetComponent<Renderer>();
-        originalColor = cellRenderer.material.color;
         originalScale = transform.localScale;
     }
 
