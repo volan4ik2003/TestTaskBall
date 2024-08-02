@@ -8,6 +8,7 @@ public class Cell : MonoBehaviour
     public bool IsPainted;
     public bool IsStartCell;
 
+    private Color originalColor;
     private Color targetColor = Color.red;
     public float animationDuration = 0.5f;
 
@@ -17,6 +18,7 @@ public class Cell : MonoBehaviour
     void Start()
     {
         cellRenderer = GetComponent<Renderer>();
+        originalColor = cellRenderer.material.color;
         originalScale = transform.localScale;
     }
 
@@ -25,6 +27,14 @@ public class Cell : MonoBehaviour
         Sequence sequence = DOTween.Sequence();
         sequence.Append(transform.DOScale(originalScale * 1.2f, animationDuration / 2))
                 .Join(cellRenderer.material.DOColor(targetColor, animationDuration / 2))
+                .Append(transform.DOScale(originalScale, animationDuration / 2));
+    }
+
+    public void RevertAnimation()
+    {
+        Sequence sequence = DOTween.Sequence();
+        sequence.Append(transform.DOScale(originalScale * 1.2f, animationDuration / 2))
+                .Join(cellRenderer.material.DOColor(originalColor, animationDuration / 2))
                 .Append(transform.DOScale(originalScale, animationDuration / 2));
     }
 }
